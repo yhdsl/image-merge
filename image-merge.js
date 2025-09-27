@@ -111,17 +111,6 @@ const drawMergeImage = ()=>{
     );
 
 
-    ctx.font = '18px sans-serif';
-    ctx.fillStyle = 'rgba(148, 128, 128, 0.3)';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'bottom';
-    ctx.fillText(
-        '巡礼对比图生成器',
-        config.margin + 12,
-        captureHeight + config.margin - 10
-    );
-
-
     if(!config.cameraImage){
         ctx.font = '48px sans-serif';
         ctx.fillStyle = '#999';
