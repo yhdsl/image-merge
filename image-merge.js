@@ -318,32 +318,6 @@ const downloadBtn = $('.download-btn');
 downloadBtn.addEventListener('click',saveImage);
 
 
-const shareBtn = $('.share-btn');
-
-if(!navigator.share){
-    shareBtn.style.display = 'none';
-}
-shareBtn.addEventListener('click',async ()=>{
-    const fileName = getFileName();
-    getCanvasImageFile(async blob=>{
-
-        if(!navigator.canShare) return;
-        const file = new File([blob],fileName,{
-            type: 'image/jpeg'
-        });
-        console.log(file)
-        const files = [file];
-        const canShare = navigator.canShare({ files });
-        console.log(file,canShare);
-        if(!canShare) return;
-
-        navigator.share({
-            title: fileName,
-            files
-        });
-    })
-});
-
 // 阻止浏览器默认的文件拖拽行为
 document.addEventListener('dragover', e => {
     e.preventDefault();
