@@ -15,6 +15,10 @@ const loadImageByURL = (url,onLoad)=>{
     img.src = url;
 };
 const loadCaptureImageURL = url=>{
+    if (!url) {
+        return;
+    }
+
     loadImageByURL(url,img=>{
         config.captureImage = img;
 
