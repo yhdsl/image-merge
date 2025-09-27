@@ -112,7 +112,7 @@ const drawMergeImage = ()=>{
     ctx.textAlign = 'left';
     ctx.textBaseline = 'bottom';
     ctx.fillText(
-        '巡礼对比图生成器 lab.magiconch.com/image-merge/',
+        '巡礼对比图生成器',
         config.margin + 12,
         captureHeight + config.margin - 10
     );
@@ -134,7 +134,7 @@ const drawMergeImage = ()=>{
         }
         
         ctx.fillText(
-            '点选或拖拽上传照片',
+            '点击或拖拽上传照片',
             drawTextLeft,
             drawTextTop
         );
@@ -255,8 +255,6 @@ inputBGColorEl.addEventListener('input',throttle(e=>{
 },10));
 
 
-
-
 const form = document.createElement('form');
 const input = document.createElement('input');
 input.type = 'file';
@@ -274,8 +272,6 @@ const chooseFile = (onOver)=>{
 
 
 const getSrcByFile = (file,onOver)=>{
-    tryEXIF(file);
-
     if(['image/heic','image/heif'].includes(file.type)){
         alert('HEIC/HEIF 格式的图片暂不支持，请转换为 JPG 格式');
         return;
@@ -292,149 +288,19 @@ const getSrcByFile = (file,onOver)=>{
 
 
 const urlParams = new URLSearchParams(window.location.search)
-loadCaptureImageURL(urlParams.get('url') || '7eyih3xg.jpg');
-
-
-// 来自动画巡礼的来源可能会带这些参数用于地标纠正统计
-const pid = urlParams.get('pid');
-const bid = urlParams.get('bid');
-const g = urlParams.get('g');
-
-
-const loadScript = (src,resolve)=>{
-    const script = document.createElement('script');
-    script.src = src;
-    script.onload = resolve;
-    document.head.appendChild(script);
-}
-
-const getDateFromEXIF = (exif,EXIF)=>{
-    // 获取照片的拍摄时间
-    const date = (
-        EXIF.getTag(exif, 'DateTime') ||
-        EXIF.getTag(exif, 'DateTimeOriginal') ||
-        EXIF.getTag(exif, 'DateTimeDigitized')
-    );
-    if(!date) return;
-
-    return date;
-    // 获取时间戳失败
-}
-
-const getSecondFromEXIF = (exif,EXIF)=>{
-    // 把 getDateFromEXIF 的结果转换成秒数
-    const date = getDateFromEXIF(exif,EXIF);
-    if(!date) return -1;
-
-    const match = date.match(/^(\d{4}):(\d{2}):(\d{2}) (\d{2}):(\d{2}):(\d{2})$/);
-    if(!match) return -1;
-    const year = +match[1];
-    const month = +match[2];
-    const day = +match[3];
-    const hour = +match[4];
-    const minute = +match[5];
-    const second = +match[6];
-
-    const s = year * 365 * 24 * 60 * 60 +
-        month * 30 * 24 * 60 * 60 +
-        day * 24 * 60 * 60 +
-        hour * 60 * 60 +
-        minute * 60 +
-        second;
-    return s;
-}
-
-const getRFromEXIF = (exif,EXIF)=>{
-    // 获取照片的拍摄方向 海拔高度 仰角
-    return Number(EXIF.getTag(exif, 'GPSImgDirection')) || -1;
-}
-
-const loadEXIFJS = (cb)=>{
-    if(window.exifr) return cb(window.exifr);
-    loadScript('exifr.7.1.3.lite.legacy.umd.min.js',()=>{
-        cb(window.exifr);
-    });
-}
-
-
-// GPS 精度1m
-const GPS_ACCURACY = 100000;
-
-const tryEXIF = file=>{
-    if(!pid) return;
-    if(!bid) return;
-    if(!g) return;
-
-    // 经纬度
-    const xy = g.split(',').map(v=>+v);
-
-    loadEXIFJS(exifr=>{
-        if(!exifr) return;
-
-        exifr.parse(file).then((exif) => {
-            console.log('exif',exif);
-            if(!exif) return;
-            const lat = Math.round(exif.latitude * GPS_ACCURACY) / GPS_ACCURACY;
-            const lng = Math.round(exif.longitude * GPS_ACCURACY) / GPS_ACCURACY;
-
-            if(!lat || !lng) return;
-
-            // 计算地标距离
-            const distance = Math.sqrt(Math.pow(lat - xy[0], 2) + Math.pow(lng - xy[1], 2));
-            // 转换成米
-            const distanceInMeters = Math.round(distance * 111139); // 1度约等于111.39km
-
-
-            // 获取拍摄时间
-            const s = Math.floor( +exif.CreateDate / 1000 );
-            
-            // 获取拍摄方向
-            const direction = Math.round(exif.GPSImgDirection || -1);
-
-
-            // 获取拍摄焦距
-            const mm = exif.FocalLengthIn35mmFormat || -1;
-
-            const data = [
-                bid,
-                pid,
-                lat,
-                lng,
-                distanceInMeters,
-                s,
-                direction,
-                mm,
-            ];
-            subPointGPS(data);
-        })
-    });
-
-}
-
-
-// 提交地标GPS修正记录
-const subPointGPS = (data)=>{
-    submitLog('pg',data);
-}
-
-const submitLog = (name,data)=>{
-    const body = JSON.stringify(data);
-    const url = `https://hk.anitabi.cn/api/log/${name}?data=${encodeURIComponent(body)}`;
-    (new Image()).src = url;
-}
-
+loadCaptureImageURL(urlParams.get('url'));
 
 const getCanvasImageFile = onOver=>{
-    canvas.toBlob(onOver,'image/jpeg',0.9);
+    canvas.toBlob(onOver,'image/jpeg',1.0);
 };
 
 const getCanvasURL = ()=>{
-    return canvas.toDataURL('image/jpeg',0.9);
+    return canvas.toDataURL('image/jpeg',1.0);
 };
 const getFileName = ()=>{
     const unix = +new Date();
     const uuid = unix.toString(36);
-    return `[神奇海螺][对比图生成器][${uuid}].jpg`;
+    return `[圣地巡礼对比图] ${uuid}.jpg`;
 };
 
 const saveImage = ()=>{
