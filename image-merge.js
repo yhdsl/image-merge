@@ -16,7 +16,15 @@ const loadImageByURL = (url,onLoad)=>{
 };
 const loadCaptureImageURL = url=>{
     if (!url) {
-        return;
+        let captureWidth = 1920;
+        let captureHeight = 1080;
+        canvas.width = captureWidth
+        canvas.height = captureHeight
+
+        ctx.fillStyle = config.background;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        url = canvas.toDataURL('image/jpeg', 1.0)
     }
 
     loadImageByURL(url,img=>{
@@ -111,25 +119,38 @@ const drawMergeImage = ()=>{
     );
 
 
-    if(!config.cameraImage){
-        ctx.font = '48px sans-serif';
-        ctx.fillStyle = '#999';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
+    ctx.font = '48px sans-serif';
+    ctx.fillStyle = '#999';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
 
-        let drawTextLeft, drawTextTop;
-        if (direction === 'vertical') {
-            drawTextLeft = outputWidth / 2;
-            drawTextTop = outputHeight * 0.75;
-        } else {
-            drawTextLeft = outputWidth * 0.75;
-            drawTextTop = outputHeight / 2;
-        }
+    let drawTextLeftCamera, drawTextTopCamera, drawTextLeftCapture, drawTextTopCapture;
+    if (direction === 'vertical') {
+        drawTextLeftCamera = outputWidth / 2;
+        drawTextLeftCapture = outputWidth / 2;
+        drawTextTopCamera = outputHeight * 0.75;
+        drawTextTopCapture = outputHeight * 0.25;
+    } else {
+        drawTextLeftCamera = outputWidth * 0.75;
+        drawTextLeftCapture = outputWidth * 0.25;
+        drawTextTopCamera = outputHeight / 2;
+        drawTextTopCapture = outputHeight / 2;
+    }
+
+    if (config.captureImage.src.startsWith('data:')) {
+        ctx.fillText(
+            '点击或拖拽上传截图',
+            drawTextLeftCapture,
+            drawTextTopCapture
+        );
+    }
+
+    if(!config.cameraImage){
         
         ctx.fillText(
             '点击或拖拽上传照片',
-            drawTextLeft,
-            drawTextTop
+            drawTextLeftCamera,
+            drawTextTopCamera
         );
 
         loadingStop();
@@ -244,6 +265,12 @@ inputBGColorEl.addEventListener('input',throttle(e=>{
     const v = e.target.value;
     config.background = v;
     inputColorValueEl.innerText = v;
+    if (config.captureImage.src.startsWith('data:')) {
+        loadCaptureImageURL();
+    }
+    else {
+        loadCaptureImageURL(config.captureImage.src);
+    }
     drawMergeImage();
 },10));
 
@@ -280,8 +307,7 @@ const getSrcByFile = (file,onOver)=>{
 };
 
 
-const urlParams = new URLSearchParams(window.location.search)
-loadCaptureImageURL(urlParams.get('url'));
+loadCaptureImageURL();
 
 const getCanvasImageFile = onOver=>{
     canvas.toBlob(onOver,'image/jpeg',1.0);
